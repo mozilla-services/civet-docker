@@ -27,37 +27,14 @@ RUN apt-get install -y \
     nodejs
 
 
-# Caddy ------------------------------------------------
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add -
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee -a /etc/apt/sources.list.d/caddy-stable.list
-RUN apt-get update
-RUN apt-get install -y \
-    caddy
-
-RUN echo "\n\
-localhost.local, threadripper.local, compiler-explorer-zhncofvzzq-uc.a.run.app, staticanalyze.me { \n\
-    reverse_proxy {\n\
-        to http://localhost:10240 \n\
-    } \n\
-}" > /etc/caddy/Caddyfile
-
-
 # Compiler Explorer -----------------------------------
 RUN git clone https://github.com/compiler-explorer/compiler-explorer.git /ce && \
     cd /ce                      && \
     git checkout $CE_VERSION
 
 
-# Services Start --------------------------------------
-RUN echo "#!/bin/bash\n\
-    caddy start --config /etc/caddy/Caddyfile \n\
-    make run \n\
-    " > /start.sh
-RUN chmod +x /start.sh
-
-
-EXPOSE 80
-EXPOSE 443
+EXPOSE 10240
 
 WORKDIR /ce
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["make"]
+CMD ["run"]
