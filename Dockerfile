@@ -35,7 +35,7 @@ RUN apt-get install -y \
     caddy
 
 RUN echo "\n\
-localhost.local, threadripper.local, staticanalyze.me { \n\
+localhost.local, threadripper.local, compiler-explorer-zhncofvzzq-uc.a.run.app, staticanalyze.me { \n\
     reverse_proxy {\n\
         to http://localhost:10240 \n\
     } \n\
