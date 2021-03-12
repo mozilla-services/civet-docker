@@ -1,0 +1,17 @@
+##
+
+Dockerfile for Mozilla's Compiler Explorer instance.
+
+### Run locally
+
+```
+docker build -t ce .
+
+docker run -p 10240:10240/tcp --entrypoint /bin/bash -ti ce
+
+docker run -p 10240:10240/tcp ce
+```
+
+### GCP Requirements
+
+4GB RAM

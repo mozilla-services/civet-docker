@@ -1,5 +1,0 @@
-docker build -t ce .
-
-docker run -p 10240:10240/tcp --entrypoint /bin/bash -ti ce
-
-docker run -p 10240:10240/tcp ce
