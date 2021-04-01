@@ -1,0 +1,11 @@
+[Unit]
+Description=Compiler Explorer
+
+[Service]
+Type=simple
+WorkingDirectory=/ce
+ExecStart=/usr/bin/make run
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
