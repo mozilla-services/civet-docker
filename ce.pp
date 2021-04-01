@@ -27,7 +27,7 @@ package { $system_packages:
 # ==================================================
 package { "nginx":
   ensure => installed,
-}
+} ->
 
 service { "nginx":
   ensure => running,
@@ -54,6 +54,32 @@ exec { 'firejail-make':
   subscribe => Vcsrepo['/firejail'],
   require   => Exec['firejail-configure'],
   refreshonly => true,
+}
+
+# ==================================================
+
+exec { 'download-clang':
+  command => '/usr/bin/wget -q https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/gecko.cache.level-1.toolchains.v3.linux64-clang-11.latest/artifacts/public/build/clang.tar.zst',
+  cwd => '/',
+  unless => '/usr/bin/ls /mozilla-clang-11'
+} ->
+
+exec { 'unzip-clang':
+  command => '/usr/bin/unzstd clang.tar.zst',
+  cwd => '/',
+  unless => '/usr/bin/ls /mozilla-clang-11',
+} ->
+
+exec { 'untar-clang':
+  command => '/usr/bin/tar xf clang.tar',
+  cwd => '/',
+  unless => '/usr/bin/ls /mozilla-clang-11',
+} ->
+
+exec { 'move-clang':
+  command => '/usr/bin/mv clang mozilla-clang-11',
+  cwd => '/',
+  unless => '/usr/bin/ls /mozilla-clang-11',
 }
 
 # ==================================================
@@ -95,30 +121,21 @@ file { '/etc/systemd/system/ce.service':
 
 service { 'ce':
   ensure => running,
+  require => [ Exec['move-clang'], Exec['firejail-make'], Service['nginx']]
 }
 
 # ==================================================
 
-exec { 'download-clang':
-  command => '/usr/bin/wget -q https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/gecko.cache.level-1.toolchains.v3.linux64-clang-11.latest/artifacts/public/build/clang.tar.zst',
-  cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11'
+vcsrepo { '/civet-docker':
+  ensure => latest,
+  provider => git,
+  source => 'https://github.com/mozilla/civet-docker.git',
+  revision => 'puppet',
 } ->
 
-exec { 'unzip-clang':
-  command => '/usr/bin/unzstd clang.tar.zst',
-  cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
-} ->
-
-exec { 'untar-clang':
-  command => '/usr/bin/tar xf clang.tar',
-  cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
-} ->
-
-exec { 'move-clang':
-  command => '/usr/bin/mv clang mozilla-clang-11',
-  cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
+cron { 'puppet-apply':
+  ensure => present,
+  command => '/usr/bin/puppet apply /civet-docker/ce.pp',
+  user => 'root',
+  minute => '0,5'
 }
