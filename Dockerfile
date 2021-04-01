@@ -5,6 +5,8 @@ ENV CE_VERSION=3c2aa307e1a2dbda3c6eb4ac6052a6a6689e6bd6
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Regular Packages ------------------------------------
+# First set is for compiler-explorer and related; second set is for firejail
+
 RUN apt-get update &&          \
     apt-get install -y         \
       apt-transport-https      \
@@ -22,7 +24,18 @@ RUN apt-get update &&          \
       make                     \
       net-tools                \
       wget                     \
-      zstd
+      zstd         &&          \
+    apt-get install -y         \
+      clang                    \
+      gawk
+
+
+# Firejail --------------------------------------------
+RUN git clone https://github.com/netblue30/firejail.git && \
+    cd firejail          && \
+    git checkout LTSbase && \
+    ./configure          && \
+    make install-strip
 
 
 # Node 12 ---------------------------------------------
@@ -36,6 +49,7 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -  && \
 RUN git clone https://github.com/compiler-explorer/compiler-explorer.git /ce && \
     cd /ce                                                                   && \
     git checkout $CE_VERSION
+COPY execution.mozilla.properties /ce/etc/config/execution.local.properties
 COPY c++.mozilla.properties /ce/etc/config/c++.local.properties
 COPY ce-mozilla.svg         /ce/views/resources/site-logo.svg
 # Matt has given his blessing for us slapping a fox on his logo; thanks Matt!
