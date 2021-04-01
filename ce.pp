@@ -75,12 +75,26 @@ vcsrepo { '/ce':
 
 file { '/ce/etc/config/execution.local.properties':
   ensure => file,
-  source => 'puppet:///execution.mozilla.properties'
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/execution.mozilla.properties'
 } ->
 
 file { '/ce/etc/config/c++.local.properties':
   ensure => file,
-  source => 'puppet:///c++.mozilla.properties'
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/c%2B%2B.mozilla.properties'
+} ->
+
+file { '/ce/views/resources/site-logo.svg':
+  ensure => file,
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/ce-mozilla.svg'
+} ->
+
+file { '/etc/systemd/system/ce.service':
+  ensure => file,
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/puppet/ce.service'
+} ->
+
+service { 'ce':
+  ensure => running,
 }
 
 # ==================================================
