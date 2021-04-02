@@ -1,17 +1,39 @@
 ##
 
-Dockerfile for Mozilla's Compiler Explorer instance.
-
-### Run locally
-
-```
-docker build -t ce .
-
-docker run -p 10240:10240/tcp --entrypoint /bin/bash -ti ce
-
-docker run -p 10240:10240/tcp ce
-```
+Puppet orchestration for Mozilla's Compiler Explorer instance.
 
 ### GCP Requirements
 
-4GB RAM
+Setup Instructions (approximately...)
+
+This is designed so that we use Google's HTTPS Load Balancer so they deal with the certificate stuff for us.
+We run an openresty server on the box configured with the [SSO proxy](https://github.com/mozilla-iam/mozilla.oidc.accessproxy). That openresty server only knows HTTP; it doesn't mess with HTTPS at all.
+Compiler Explorer runs on the machine on port 10240 and openresty proxies to it.
+
+1. Reserve a Static IP Address in GCP; you'll need this. Put it in the 'Standard Netowkr Tier' if you get an option.
+2. Set the domain name to point to that IP address in the registrar
+3. Add the domain to Google Webmaster Central and verify it (probably using the TXT verification method)
+4. (The rest of this is in GCP) Create a Machine Image (and a VM running the image) as per below
+5. Create an 'Instance Group' because Load Balancers can only point to groups.
+6. Add the single VM to the group and set up the group to not do any autoscaling.
+7. Go over to load balancing, and at the bottom go to the 'advanced' menu. Use that to create a SSL certificate.
+8. Go back to the main screen of Load Balancing and set up the HTTPS Load Balancer.  It'll be one backend service pointing to the instance group you made. Nothing in Host/Path rules. Frontend will be HTTPS using your reserved IP and your certificate you made in step 7.
+9. Now go back to Load Balancing and set up the HTTP Load Balancer. There's a [doc on this](https://cloud.google.com/load-balancing/docs/https/setting-up-http-https-redirect) but the gist is: no backend service; advanced host and path rule: full path redirect, 301 moved permanently, and HTTP Redirect Enable; and the frontend is the same IP and port 80.
+
+#### Set up a machine image:
+
+Create a VM instance using Ubuntu 20.04 and do the following:
+
+```
+sudo apt-get update
+sudo apt-get install puppet emacs
+sudo puppet module install puppetlabs-stdlib --version 7.0.0
+sudo puppet module install puppetlabs-vcsrepo --version 4.0.1
+sudo apt-get update
+cd /
+sudo git clone https://github.com/mozilla-services/civet-docker.git
+
+Add `@reboot /usr/bin/puppet apply /civet-docker/ce.pp` to cron with `crontab -e`
+```
+
+Then create a Machine Image from it.  When that's done, shut down the VM and start a new one from the Machine Instance. Ensure that the machine has done all the puppet stuff. You can make sure compiler-explorer is running locally by doing `curl http://localhost:10240`.  It does take a few minutes for puppet to finish everything as compiling CE takes a few minutes at least.
