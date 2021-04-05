@@ -67,6 +67,10 @@ exec { "setup-openresty-3":
   command => '/usr/bin/apt-get update'
 } ->
 
+exec { "setup-openresty-4":
+  command => '/usr/bin/opm install zmartzone/lua-resty-openidc'
+} ->
+
 package { 'openresty':
   ensure => 'latest',
 } ->
@@ -75,19 +79,19 @@ package { "lua5.1":
   ensure => latest,
 } ->
 
-file_line { env-2:
+file_line { env-1:
   ensure => present,
   path => "/etc/environment",
   line => "discovery_url=https://auth.mozilla.auth0.com/.well-known/openid-configuration"
 } ->
 
-file_line { env-3:
+file_line { env-2:
   ensure => present,
   path => "/etc/environment",
   line => "backend=http://localhost:10240"
 } ->
 
-file_line { env-4:
+file_line { env-3:
   ensure => present,
   path => "/etc/environment",
   line => "httpsredir=no"
@@ -116,6 +120,13 @@ file_line { 'resolver-replace':
     match  => "resolver 127.0.0.11; # Docker networking's DNS"
 } ->
 
+file_line { 'ca-replace':
+    path      => '/etc/openresty/conf.d/nginx_lua.conf',
+    replace => true,
+    line       => 'lua_ssl_trusted_certificate "/etc/ssl/certs/ca-certificates.crt";',
+    match  => 'lua_ssl_trusted_certificate "/etc/ssl/certs/ca-bundle.crt";'
+} ->
+
 file { '/etc/openresty/conf.d/openidc_layer.lua':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/openidc_layer.lua',
@@ -130,7 +141,7 @@ file { '/etc/openresty/conf.d/proxy_auth_bypass.conf':
 
 file { '/etc/openresty/conf.d/server.conf':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/server.conf',
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/server.conf',
   notify  => Service['openresty']
 } ->
 
