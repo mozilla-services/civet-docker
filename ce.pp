@@ -93,51 +93,55 @@ file_line { env-4:
   line => "httpsredir=no"
 } ->
 
-file { '/etc/nginx/nginx.conf':
+file { '/etc/openresty/conf.d/':
+  ensure => 'directory',
+} ->
+
+file { '/etc/openresty/nginx.conf':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/nginx.conf',
   notify  => Service['openresty']
 } ->
 
-file { '/etc/nginx/conf.d/nginx_lua.conf':
+file { '/etc/openresty/conf.d/nginx_lua.conf':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/nginx_lua.conf',
   notify  => Service['openresty']
 } ->
 
 file_line { 'resolver-replace':
-    path      => '/etc/nginx/conf.d/nginx_lua.conf',
+    path      => '/etc/openresty/conf.d/nginx_lua.conf',
     replace => true,
     line       => "resolver 8.8.8.8 8.8.4.4;",
     match  => "resolver 127.0.0.11; # Docker networking's DNS"
 } ->
 
-file { '/etc/nginx/conf.d/openidc_layer.lua':
+file { '/etc/openresty/conf.d/openidc_layer.lua':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/openidc_layer.lua',
   notify  => Service['openresty']
 } ->
 
-file { '/etc/nginx/conf.d/proxy_auth_bypass.conf':
+file { '/etc/openresty/conf.d/proxy_auth_bypass.conf':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/proxy_auth_bypass.conf',
   notify  => Service['openresty']
 } ->
 
-file { '/etc/nginx/conf.d/server.conf':
+file { '/etc/openresty/conf.d/server.conf':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/server.conf',
   notify  => Service['openresty']
 } ->
 
-file { '/etc/nginx/conf.d/server.lua':
+file { '/etc/openresty/conf.d/server.lua':
   ensure => file,
   source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/server.lua',
   notify  => Service['openresty']
 } ->
 
 file_line { 'server-replace':
-    path      => '/etc/nginx/conf.d/server.lua',
+    path      => '/etc/openresty/conf.d/server.lua',
     replace => true,
     line       => "app_name = 'compiler-explorer'",
     match  => "app_name = 'proxied_app'"
