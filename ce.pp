@@ -67,12 +67,16 @@ exec { "setup-openresty-3":
   command => '/usr/bin/apt-get update'
 } ->
 
-exec { "setup-openresty-4":
-  command => '/usr/bin/opm install zmartzone/lua-resty-openidc'
-} ->
-
 package { 'openresty':
   ensure => 'latest',
+} ->
+
+package { 'openresty-opm':
+  ensure => 'latest',
+} ->
+
+exec { "setup-openresty-4":
+  command => '/usr/bin/opm install zmartzone/lua-resty-openidc'
 } ->
 
 package { "lua5.1":
@@ -237,7 +241,6 @@ vcsrepo { '/civet-docker':
   ensure => latest,
   provider => git,
   source => 'https://github.com/mozilla-services/civet-docker.git',
-  revision => 'puppet',
 } ->
 
 cron { 'puppet-apply':
