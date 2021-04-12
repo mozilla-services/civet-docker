@@ -76,7 +76,8 @@ package { 'openresty-opm':
 } ->
 
 exec { "setup-openresty-4":
-  command => '/usr/bin/opm install zmartzone/lua-resty-openidc'
+  command => '/usr/bin/opm install zmartzone/lua-resty-openidc',
+  environment => [ 'HOME=/root' ]
 } ->
 
 package { "lua5.1":
@@ -85,6 +86,10 @@ package { "lua5.1":
 
 file { '/etc/systemd/system/openresty.service.d/':
   ensure => 'directory',
+} ->
+
+file { '/etc/systemd/system/openresty.service.d/override.conf':
+  ensure => present
 } ->
 
 file_line { env-1:
