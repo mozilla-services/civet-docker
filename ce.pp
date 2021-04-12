@@ -83,21 +83,25 @@ package { "lua5.1":
   ensure => latest,
 } ->
 
+file { '/etc/systemd/system/openresty.service.d/':
+  ensure => 'directory',
+} ->
+
 file_line { env-1:
   ensure => present,
-  path => "/etc/environment",
+  path => "/etc/systemd/system/openresty.service.d/override.conf",
   line => "discovery_url=https://auth.mozilla.auth0.com/.well-known/openid-configuration"
 } ->
 
 file_line { env-2:
   ensure => present,
-  path => "/etc/environment",
+  path => "/etc/systemd/system/openresty.service.d/override.conf",
   line => "backend=http://localhost:10240"
 } ->
 
 file_line { env-3:
   ensure => present,
-  path => "/etc/environment",
+  path => "/etc/systemd/system/openresty.service.d/override.conf",
   line => "httpsredir=no"
 } ->
 
