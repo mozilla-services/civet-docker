@@ -14,6 +14,7 @@ $system_packages = [
 'emacs',
 'gawk',
 'git',
+'jq',
 'make',
 'net-tools',
 'wget',
@@ -89,25 +90,28 @@ file { '/etc/systemd/system/openresty.service.d/':
 } ->
 
 file { '/etc/systemd/system/openresty.service.d/override.conf':
-  ensure => present
+  ensure => file,
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/override.conf'
 } ->
 
-file_line { env-1:
-  ensure => present,
-  path => "/etc/systemd/system/openresty.service.d/override.conf",
-  line => "discovery_url=https://auth.mozilla.auth0.com/.well-known/openid-configuration"
+exec { 'setup-env-secret-1':
+  command => '/usr/bin/echo \'Environment="client_id=\'$(/usr/bin/curl "https://secretmanager.googleapis.com/v1/projects/moz-dev-fx-tritter-compilerexp/secrets/compiler-explorer-client-id/versions/latest:access" \
+    --request "GET" \
+    --header "authorization: Bearer `/snap/bin/gcloud auth print-access-token`" \
+    --header "content-type: application/json" \
+    --header "x-goog-user-project: moz-dev-fx-tritter-compilerexp" \
+    | /usr/bin/jq -r ".payload.data" | /usr/bin/base64 --decode)\'"\' >> /etc/systemd/system/openresty.service.d/override.conf',
+  unless => '/usr/bin/grep client_id=S /etc/systemd/system/openresty.service.d/override.conf',
 } ->
 
-file_line { env-2:
-  ensure => present,
-  path => "/etc/systemd/system/openresty.service.d/override.conf",
-  line => "backend=http://localhost:10240"
-} ->
-
-file_line { env-3:
-  ensure => present,
-  path => "/etc/systemd/system/openresty.service.d/override.conf",
-  line => "httpsredir=no"
+exec { 'setup-env-secret-2':
+  command => '/usr/bin/echo \'Environment="client_secret=\'$(/usr/bin/curl "https://secretmanager.googleapis.com/v1/projects/moz-dev-fx-tritter-compilerexp/secrets/compiler-explorer-client-secret/versions/latest:access" \
+    --request "GET" \
+    --header "authorization: Bearer `/snap/bin/gcloud auth print-access-token`" \
+    --header "content-type: application/json" \
+    --header "x-goog-user-project: moz-dev-fx-tritter-compilerexp" \
+    | /usr/bin/jq -r ".payload.data" | /usr/bin/base64 --decode)\'"\' >> /etc/systemd/system/openresty.service.d/override.conf',
+  unless => '/usr/bin/grep client_secret=K /etc/systemd/system/openresty.service.d/override.conf',
 } ->
 
 file { '/etc/openresty/conf.d/':
