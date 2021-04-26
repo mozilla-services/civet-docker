@@ -77,7 +77,7 @@ package { 'openresty-opm':
 } ->
 
 exec { "setup-openresty-4":
-  command => '/usr/bin/opm install zmartzone/lua-resty-openidc',
+  command => '/usr/bin/opm install zmartzone/lua-resty-openidc=1.7.3',
   environment => [ 'HOME=/root' ]
 } ->
 
