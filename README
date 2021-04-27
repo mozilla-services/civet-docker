@@ -10,7 +10,7 @@ This is designed so that we use Google's HTTPS Load Balancer so they deal with t
 We run an openresty server on the box configured with the [SSO proxy](https://github.com/mozilla-iam/mozilla.oidc.accessproxy). That openresty server only knows HTTP; it doesn't mess with HTTPS at all.
 Compiler Explorer runs on the machine on port 10240 and openresty proxies to it.
 
-1. Reserve a Static IP Address in GCP; you'll need this. Put it in the 'Standard Netowkr Tier' if you get an option.
+1. Reserve a Static IP Address in GCP; you'll need this. Put it in the 'Standard Network Tier' if you get an option.
 2. Set the domain name to point to that IP address in the registrar
 3. Add the domain to Google Webmaster Central and verify it (probably using the TXT verification method)
 4. (The rest of this is in GCP) Create a Machine Image (and a VM running the image) as per below
@@ -19,10 +19,12 @@ Compiler Explorer runs on the machine on port 10240 and openresty proxies to it.
 7. Go over to load balancing, and at the bottom go to the 'advanced' menu. Use that to create a SSL certificate.
 8. Go back to the main screen of Load Balancing and set up the HTTPS Load Balancer.  It'll be one backend service pointing to the instance group you made. Nothing in Host/Path rules. Frontend will be HTTPS using your reserved IP and your certificate you made in step 7.
 9. Now go back to Load Balancing and set up the HTTP Load Balancer. There's a [doc on this](https://cloud.google.com/load-balancing/docs/https/setting-up-http-https-redirect) but the gist is: no backend service; advanced host and path rule: full path redirect, 301 moved permanently, and HTTP Redirect Enable; and the frontend is the same IP and port 80.
+10. Go to IAM & Admin -> Service Accounts and create a Service Account. Give it the 'Secret Manager Secret Accessor' role.
+11. Go to Security -> Secrets Manager and create two secrets, one for the client id and one for the client secret. The Service Account should get automatic access to it, but make sure it can.
 
 #### Set up a machine image:
 
-Create a VM instance using Ubuntu 20.04 and do the following:
+Create a VM instance using Ubuntu 20.04, at least 4 GB of RAM, an SSH key to get in, and the correct service account and then do the following:
 
 ```
 sudo apt-get update
