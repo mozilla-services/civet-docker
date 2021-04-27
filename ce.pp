@@ -2,6 +2,7 @@
 $system_packages = [
 'apt-transport-https',
 'bison',
+'cgroup-tools',
 'clang',
 'clang-9',
 'clang-tools-9',
@@ -48,6 +49,10 @@ exec { 'nsjail-make':
   command => '/usr/bin/make',
   cwd => '/nsjail',
   environment => [ 'CC=clang', 'CXX=clang++', 'CXXFLAGS="-I/usr/include/libnl3"', 'LDFLAGS="-lnl-3 -lnl-route-3"' ]
+} ->
+
+exec { 'cgroup-create':
+  command => '/usr/bin/cgcreate -a ubuntu:ubuntu -g memory,pids,cpu,net_cls:ce-compile'
 }
 
 # ==================================================
@@ -234,6 +239,11 @@ file { '/opt/compiler-explorer/etc/config/c++.local.properties':
   ensure => file,
   source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/c%2B%2B.mozilla.properties'
 } ->
+
+file { '/opt/compiler-explorer/etc/nsjail/execute.cfg':
+  ensure => file,
+  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/execute.cfg'
+}
 
 file { '/opt/compiler-explorer/views/resources/site-logo.svg':
   ensure => file,

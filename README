@@ -24,7 +24,9 @@ Compiler Explorer runs on the machine on port 10240 and openresty proxies to it.
 
 #### Set up a machine image:
 
-Create a VM instance using Ubuntu 20.04, at least 4 GB of RAM, an SSH key to get in, and the correct service account and then do the following:
+Create a VM instance using Ubuntu 20.04, at least 4 GB of RAM, an SSH key to get in, give it the username 'ubuntu', and the correct service account and then do the following:
+
+(The specific username is important.)
 
 ```
 sudo apt-get update
