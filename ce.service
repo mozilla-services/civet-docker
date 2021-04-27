@@ -3,7 +3,7 @@ Description=Compiler Explorer
 
 [Service]
 Type=simple
-WorkingDirectory=/ce
+WorkingDirectory=/opt/compiler-explorer
 ExecStart=/usr/bin/make run
 Restart=on-failure
 

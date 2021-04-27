@@ -1,6 +1,7 @@
 # ==================================================
 $system_packages = [
 'apt-transport-https',
+'bison',
 'clang',
 'clang-9',
 'clang-tools-9',
@@ -12,11 +13,16 @@ $system_packages = [
 'debian-archive-keyring',
 'debian-keyring',
 'emacs',
+'flex',
 'gawk',
 'git',
 'jq',
+'libnl-3-dev',
+'libnl-route-3-dev',
 'make',
 'net-tools',
+'pkg-config',
+'protobuf-compiler',
 'wget',
 'zstd',
 ]
@@ -31,25 +37,17 @@ package { "nginx":
 }
 
 # ==================================================
-vcsrepo { '/firejail':
-  ensure => latest,
+vcsrepo { '/nsjail':
+  ensure => present,
   provider => git,
-  source => 'https://github.com/netblue30/firejail.git',
-  revision => 'LTSbase',
+  source => 'https://github.com/google/nsjail.git',
+  revision => '3.0',
 } ->
 
-exec { 'firejail-configure':
-  command => '/firejail/configure',
-  cwd => '/firejail',
-  subscribe => Vcsrepo['/firejail'],
-  refreshonly => true,
-} ->
-
-exec { 'firejail-make':
-  command => '/usr/bin/make install-strip',
-  cwd => '/firejail',
-  subscribe => Vcsrepo['/firejail'],
-  refreshonly => true,
+exec { 'nsjail-make':
+  command => '/usr/bin/make',
+  cwd => '/nsjail',
+  environment => [ 'CC=clang', 'CXX=clang++', 'CXXFLAGS="-I/usr/include/libnl3"', 'LDFLAGS="-lnl-3 -lnl-route-3"' ]
 }
 
 # ==================================================
@@ -216,24 +214,28 @@ package { 'nodejs':
   ensure => 'latest',
 } ->
 
-vcsrepo { '/ce':
+file { '/opt/':
+  ensure => 'directory',
+} ->
+
+vcsrepo { '/opt/compiler-explorer':
   ensure => latest,
   provider => git,
   source => 'https://github.com/compiler-explorer/compiler-explorer.git',
   revision => '3c2aa307e1a2dbda3c6eb4ac6052a6a6689e6bd6',
 } ->
 
-file { '/ce/etc/config/execution.local.properties':
+file { '/opt/compiler-explorer/etc/config/execution.local.properties':
   ensure => file,
   source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/execution.mozilla.properties'
 } ->
 
-file { '/ce/etc/config/c++.local.properties':
+file { '/opt/compiler-explorer/etc/config/c++.local.properties':
   ensure => file,
   source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/c%2B%2B.mozilla.properties'
 } ->
 
-file { '/ce/views/resources/site-logo.svg':
+file { '/opt/compiler-explorer/views/resources/site-logo.svg':
   ensure => file,
   source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/ce-mozilla.svg'
 } ->
