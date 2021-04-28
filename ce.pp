@@ -48,7 +48,7 @@ vcsrepo { '/nsjail':
 exec { 'nsjail-make':
   command => '/usr/bin/make',
   cwd => '/nsjail',
-  environment => [ 'CC=clang', 'CXX=clang++', 'CXXFLAGS="-I/usr/include/libnl3"', 'LDFLAGS="-lnl-3 -lnl-route-3"' ]
+  environment => [ 'CC=clang', 'CXX=clang++', 'CXXFLAGS="-I/usr/include/libnl3"', 'LDFLAGS="-L/usr/lib/x86_64-linux-gnu/ -lnl-3 -lnl-route-3"']
 } ->
 
 exec { 'cgroup-create':
@@ -224,10 +224,10 @@ file { '/opt/':
 } ->
 
 vcsrepo { '/opt/compiler-explorer':
-  ensure => latest,
+  ensure => present,
   provider => git,
   source => 'https://github.com/compiler-explorer/compiler-explorer.git',
-  revision => '3c2aa307e1a2dbda3c6eb4ac6052a6a6689e6bd6',
+  revision => 'a519919a340e77041b1064d8e7952f047f68db37',
 } ->
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
