@@ -34,10 +34,12 @@ sudo apt-get install puppet emacs
 sudo puppet module install puppetlabs-stdlib --version 7.0.0
 sudo puppet module install puppetlabs-vcsrepo --version 4.0.1
 sudo apt-get update
+
 cd /
 sudo git clone https://github.com/mozilla-services/civet-docker.git
 
-Add `@reboot /usr/bin/puppet apply /civet-docker/ce.pp` to cron with `crontab -e`
+printf "#%s/bin/sh -e\n\n/usr/bin/puppet apply /civet-docker/ce.pp" ! | sudo tee /etc/rc.local
+sudo chmod +x /etc/rc.local
 ```
 
 Then create a Machine Image from it.  When that's done, shut down the VM and start a new one from the Machine Instance. Ensure that the machine has done all the puppet stuff. You can make sure compiler-explorer is running locally by doing `curl http://localhost:10240`.  It does take a few minutes for puppet to finish everything as compiling CE takes a few minutes at least.
