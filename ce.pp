@@ -257,7 +257,7 @@ file { '/etc/systemd/system/ce.service':
 
 service { 'ce':
   ensure => running,
-  require => [ Exec['move-clang'], Exec['firejail-make'], Service['openresty']]
+  require => [ Exec['move-clang'], Exec['cgroup-create'], Service['openresty']]
 }
 
 # ==================================================
