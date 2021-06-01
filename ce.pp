@@ -186,27 +186,32 @@ service { 'openresty':
 # ==================================================
 
 exec { 'download-clang':
-  command => '/usr/bin/wget -q https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/gecko.cache.level-1.toolchains.v3.linux64-clang-11.latest/artifacts/public/build/clang.tar.zst',
+  command => '/usr/bin/wget -q https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/gecko.cache.level-1.toolchains.v3.linux64-clang-12.latest/artifacts/public/build/clang.tar.zst',
   cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11'
+  unless => '/usr/bin/ls /mozilla-clang-12'
 } ->
 
 exec { 'unzip-clang':
   command => '/usr/bin/unzstd clang.tar.zst',
   cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
+  unless => '/usr/bin/ls /mozilla-clang-12',
 } ->
 
 exec { 'untar-clang':
   command => '/usr/bin/tar xf clang.tar',
   cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
+  unless => '/usr/bin/ls /mozilla-clang-12',
 } ->
 
 exec { 'move-clang':
-  command => '/usr/bin/mv clang mozilla-clang-11',
+  command => '/usr/bin/mv clang mozilla-clang-12',
   cwd => '/',
-  unless => '/usr/bin/ls /mozilla-clang-11',
+  unless => '/usr/bin/ls /mozilla-clang-12',
+} ->
+
+exec { 'cleanup-clang':
+  command => '/usr/bin/rm -f clang.* public*',
+  cwd => '/',
 }
 
 # ==================================================
