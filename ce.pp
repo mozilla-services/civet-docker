@@ -276,7 +276,30 @@ vcsrepo { '/mozilla-central':
   ensure => latest,
   provider => hg,
   source => 'https://hg.mozilla.org/mozilla-central/',
+} ->
+
+# We do it with a -tmp directory we replace in case the headers
+
+file { '/mozilla-libs/':
+  ensure => 'directory',
+} ->
+
+file { '/mozilla-libs-tmp/':
+  ensure => 'directory',
+} ->
+
+exec { 'headers-1':
+  command => '/civet-docker/get_mozbuild_exports.py -i /mozilla-central/ -o /mozilla-libs-tmp/',
+} ->
+
+exec { 'headers-2':
+  command => '/civet-docker/get_other_exports.py -i /mozilla-central/ -o /mozilla-libs-tmp/',
+} ->
+
+exec { 'headers-3':
+  command => '/usr/bin/rm -r /mozilla-libs/ && mv /mozilla-libs-tmp/ /mozilla-libs/'
 }
+
 
 # ==================================================
 
