@@ -242,27 +242,27 @@ vcsrepo { '/opt/compiler-explorer':
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/execution.mozilla.properties'
+  source => '/civet-docker/execution.mozilla.properties'
 } ->
 
 file { '/opt/compiler-explorer/etc/config/c++.local.properties':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/c%2B%2B.mozilla.properties'
+  source => '/civet-docker/c++.mozilla.properties'
 } ->
 
 file { '/opt/compiler-explorer/etc/nsjail/execute.cfg':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/execute.cfg'
+  source => '/civet-docker/execute.cfg'
 }
 
 file { '/opt/compiler-explorer/views/resources/site-logo.svg':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/ce-mozilla.svg'
+  source => '/civet-docker/ce-mozilla.svg'
 } ->
 
 file { '/etc/systemd/system/ce.service':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/ce.service'
+  source => '/civet-docker/ce.service'
 } ->
 
 service { 'ce':
