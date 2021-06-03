@@ -118,6 +118,10 @@ exec { 'setup-env-secret-2':
   unless => '/usr/bin/grep client_secret=K /etc/systemd/system/openresty.service.d/override.conf',
 } ->
 
+exec { 'setup-env-secret-3':
+  command => '/usr/bin/systemctl daemon-reload',
+} ->
+
 file { '/etc/openresty/conf.d/':
   ensure => 'directory',
 } ->
