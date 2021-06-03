@@ -271,6 +271,7 @@ vcsrepo { '/civet-docker':
   ensure => latest,
   provider => git,
   source => 'https://github.com/mozilla-services/civet-docker.git',
+  revision => 'header-includes'
 } ->
 
 cron { 'puppet-apply':
