@@ -21,6 +21,7 @@ $system_packages = [
 'libnl-3-dev',
 'libnl-route-3-dev',
 'make',
+'mercurial',
 'net-tools',
 'pkg-config',
 'protobuf-compiler',
@@ -263,6 +264,14 @@ file { '/etc/systemd/system/ce.service':
 service { 'ce':
   ensure => running,
   require => [ Exec['move-clang'], Exec['cgroup-create'], Service['openresty']]
+}
+
+# ==================================================
+
+vcsrepo { '/mozilla-central':
+  ensure => latest,
+  provider => hg,
+  source => 'https://hg.mozilla.org/mozilla-central/',
 }
 
 # ==================================================
