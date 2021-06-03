@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import argparse
-
-from xpcom.base.ErrorList import error_list_h, error_names_internal_h
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", action="store", required=True, help="input mozilla-central directory")
 	parser.add_argument("-o", action="store", required=True, help="destination directory for the symlinks")
 	args = parser.parse_args()
+
+	sys.path.append(args.i)
+	from xpcom.base.ErrorList import error_list_h, error_names_internal_h
 
 	with open(os.path.join(args.o, "ErrorList.h"), "w") as f:
 		error_list_h(f)
@@ -33,3 +36,4 @@ if __name__ == "__main__":
 """
 	with open(os.path.join(args.o, "xpcom-config.h"), "w") as f:
 		f.write(xpcom_config)
+
