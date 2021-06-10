@@ -31,6 +31,14 @@ $system_packages = [
 
 package { $system_packages:
   ensure => 'latest'
+} ->
+
+exec { 'rustup-1':
+  command => '/usr/bin/snap install rustup --classic',
+} ->
+
+exec { 'rustup-2':
+  command => '/snap/bin/rustup toolchain install stable',
 }
 
 # ==================================================
@@ -276,6 +284,20 @@ vcsrepo { '/mozilla-central':
   ensure => latest,
   provider => hg,
   source => 'https://hg.mozilla.org/mozilla-central/',
+} ->
+
+file { '/mozilla-central/.mozconfig':
+  content => "mk_add_options AUTOCLOBBER=1\nmk_add_options MOZ_OBJDIR=objdir\nac_add_options --enable-bootstrap\n",
+} ->
+
+exec { 'build-export-2':
+  command => '/mozilla-central/mach create-mach-environment',
+  cwd => '/mozilla-central'
+} ->
+
+exec { 'build-export-3':
+  command => '/mozilla-central/mach build export',
+  cwd => '/mozilla-central'
 } ->
 
 # We do it with a -tmp directory we replace in case the headers

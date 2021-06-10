@@ -15,9 +15,15 @@ def get_mozbuild_files(moz_central):
 				fullpath = os.path.join(dirpath, f)
 				if "/win/" in fullpath:
 					continue
+				elif "/windows/" in fullpath:
+					continue
+				elif "/android/" in fullpath:
+					continue
 				elif "/mac/" in fullpath:
 					continue
 				elif "/test/" in fullpath:
+					continue
+				elif "/accessible/other/" in fullpath:
 					continue
 				yield fullpath
 	
@@ -46,7 +52,7 @@ def get_exports(source, root):
 		for node in ast.walk(root)
 		if isinstance(node, ast.Assign)
 		and (
-			(isinstance(node.targets[0], ast.Name) and node.targets[0].id == "EXPORTS")
+			(isinstance(node.targets[0], ast.Name) and node.targets[0].id in ["EXPORTS", "h_and_cpp"])
 			or
 			(isinstance(node.targets[0], ast.Attribute) and "EXPORTS" in ast.get_source_segment(source, node))
 			)
@@ -96,31 +102,48 @@ def get_symlink_mapping(all_exports):
 			export_list = None
 			if isinstance(decl.value, ast.ListComp):
 				# e.g. EXPORTS += ["!%s.h" % stem for stem in generated]
-				# We're not going to attempt to figure these out.
+				if '"!' in source:
+					# If it has what looks like an objdir path, ignore it
+					continue
+				elif source == "EXPORTS.mozilla.webgpu += [x + \".h\" for x in h_and_cpp]":
+					continue
+
+				assert False, "We shouldn't wind up here because we think we've handled all these cases"
 				continue
 			elif isinstance(decl.value, ast.Subscript):
 				# e.g. EXPORTS.vpx += files['X64_EXPORTS']
 				# We're not going to attempt to figure these out.
+				assert "vpx" in source or "aom" in source, "We shouldn't wind up here."
 				continue
 			elif isinstance(decl.value, ast.Call):
 				# e.g. EXPORTS.mozilla += sorted(["!" + g for g in gen_h])
-				# We're not going to attempt to figure these out.
+				if '"!' in source:
+					# If it has what looks like an objdir path, ignore it
+					continue
+
+				assert False, "We shouldn't wind up here because we think we've handled all these cases"
 				continue
 			elif isinstance(decl.value, ast.Name):
 				# e.g. EXPORTS.gtest += gtest_exports
 				# We're not going to attempt to figure these out.
+				assert "gtest" in source or "gmock" in source, "We shouldn't wind up here"
 				continue
 			elif isinstance(decl.value, ast.List):
 				export_list = decl.value
 			else:
-				#assert False
-				pdb.set_trace()
+				assert False, "We shouldn't be here."
+				continue
 
 			rel_path = ""
+			special_case = False
 			target = decl.target if isinstance(decl, ast.AugAssign) else decl.targets[0]
 			if isinstance(target, ast.Name):
-				assert target.id == "EXPORTS"
-				rel_path = ""
+				assert target.id in ["EXPORTS", "h_and_cpp"]
+				if target.id == "h_and_cpp":
+					special_case = True
+					rel_path = os.path.join("mozilla", "webgpu")
+				else:
+					rel_path = ""
 			elif isinstance(target, ast.Attribute):
 				toptarget = target
 				subtarget = target
@@ -144,27 +167,45 @@ def get_symlink_mapping(all_exports):
 					pdb.set_trace()
 
 				if li.value[0] == '!':
-					# FIXME
+					# We'll get these later from objdir/dist/includes
 					continue
+
+				list_value = li.value
+				if special_case:
+					list_value = li.value + ".h"
 
 				if rel_path not in to_symlink:
 					to_symlink[rel_path] = []
 
-				fullpath = os.path.join(os.path.dirname(filename), li.value)
+				fullpath = os.path.join(os.path.dirname(filename), list_value)
 				to_symlink[rel_path].append(fullpath)
 		
 	return to_symlink
+
+def makedirs(path):
+	try:
+		os.makedirs(path)
+	except OSError as exc:
+	    if exc.errno != errno.EEXIST:
+	        raise
+	    pass
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", action="store", required=True, help="input mozilla-central directory")
 	parser.add_argument("-o", action="store", required=True, help="destination directory for the symlinks")
+	parser.add_argument("-v", action="store_true", required=False, help="verbose output")
 	args = parser.parse_args()
 
 	for dirpath, dirnames, filenames in os.walk(args.o):
 		if len(dirnames) != 0 or len(filenames) != 0:
 			print("Output directory is not empty.")
 			sys.exit(1)
+	os.makedirs(args.o)
+
+	if args.i[0] != "/" or args.o[0] != "/":
+		print("Only fully-qualified paths are allowed.")
+		sys.exit(1)
 	
 	all_exports = []
 	for filepath in get_mozbuild_files(args.i):
@@ -177,23 +218,38 @@ if __name__ == "__main__":
 	
 	for relpath, files in to_symlink.items():
 		if relpath:
-			try:
-				os.makedirs(os.path.join(args.o, relpath))
-			except OSError as exc:
-			    if exc.errno != errno.EEXIST:
-			        raise
-			    pass
-		print(relpath)
+			makedirs(os.path.join(args.o, relpath))
+		if args.v:
+			print(relpath)
 		for f in files:
 			src = f
 			dst = os.path.join(args.o, relpath, os.path.basename(f))
-			print("\t", f)
+			if args.v:
+				print("\t", f)
 			try:
 				os.symlink(src, dst)
-			except:
-				print("Could not symlink %s to %s because it already existed." % (src, dst), file=sys.stderr)
+			except Exception as e:
+				print("Could not symlink %s to %s." % (src, dst), file=sys.stderr)
+				print(e)
 	
+	# Now grab everything from objdir/dist/includes
+	if args.v:
+		print("Generated Headers")
+	for (dirpath, dirnames, filenames) in os.walk(os.path.join(args.i, "objdir/dist/include/")):
+		for f in filenames:
+			src = os.path.join(dirpath, f)
+			if args.v:
+				print("\t", src)
+
+			rel_path = dirpath.replace(args.i, "").replace("objdir/dist/include/", "").lstrip("/")
+			if rel_path:
+				makedirs(os.path.join(args.o, rel_path))
+			dst = os.path.join(args.o, rel_path, f)
+			os.symlink(src, dst)
+
 	# Now do the special icky NSPR stuff
+	if args.v:
+		print("NSPR Headers")
 	shutil.rmtree(os.path.join(args.o, "nspr"))
 	os.mkdir(os.path.join(args.o, "nspr"))
 
@@ -213,6 +269,8 @@ if __name__ == "__main__":
 				assert os.path.isdir(dst_dir)
 
 				dst = os.path.join(dst_dir, f)
+				if args.v:
+					print("\t", src)
 				os.symlink(src, dst)
 	
 	src = os.path.join(args.i, "config/external/nspr/prcpucfg.h")
