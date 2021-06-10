@@ -94,7 +94,7 @@ def get_exports(source, root):
 	
 	return linux_exports
 
-def get_symlink_mapping(all_exports):
+def get_symlink_mapping(mozilla_root, all_exports):
 	# key: relative path, e.g. 'mozilla', 'mozilla/foo/'
 	# value: fullpath to .h file from mozilla-central root
 	to_symlink = {}
@@ -169,18 +169,22 @@ def get_symlink_mapping(all_exports):
 					assert False
 					pdb.set_trace()
 
-				if li.value[0] == '!':
+				list_value = li.value
+				list_value_path = os.path.dirname(filename)
+
+				if special_case:
+					list_value = list_value + ".h"
+				elif list_value[0] == '!':
 					# We'll get these later from objdir/dist/includes
 					continue
-
-				list_value = li.value
-				if special_case:
-					list_value = li.value + ".h"
+				elif list_value[0] == '/':
+					list_value = list_value[1:]
+					list_value_path = args.i
 
 				if rel_path not in to_symlink:
 					to_symlink[rel_path] = []
 
-				fullpath = os.path.join(os.path.dirname(filename), list_value)
+				fullpath = os.path.join(list_value_path, list_value)
 				to_symlink[rel_path].append(fullpath)
 		
 	return to_symlink
@@ -217,7 +221,7 @@ if __name__ == "__main__":
 		if len(more):
 			all_exports.append((filepath, more))
 			
-	to_symlink = get_symlink_mapping(all_exports)
+	to_symlink = get_symlink_mapping(args.i, all_exports)
 	
 	for relpath, files in to_symlink.items():
 		if relpath:
