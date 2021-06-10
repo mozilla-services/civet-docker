@@ -315,10 +315,6 @@ exec { 'headers-1':
 } ->
 
 exec { 'headers-2':
-  command => '/civet-docker/get_other_exports.py -i /mozilla-central/ -o /mozilla-libs-tmp/',
-} ->
-
-exec { 'headers-3':
   command => '/usr/bin/rm -r /mozilla-libs/ && mv /mozilla-libs-tmp/ /mozilla-libs/'
 }
 
