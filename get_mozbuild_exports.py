@@ -247,6 +247,21 @@ if __name__ == "__main__":
 			dst = os.path.join(args.o, rel_path, f)
 			os.symlink(src, dst)
 
+	# Now grab everything from objdir/ipc/ipdl/_ipdlheaders
+	if args.v:
+		print("IPC Headers")
+	for (dirpath, dirnames, filenames) in os.walk(os.path.join(args.i, "objdir/ipc/ipdl/_ipdlheaders/")):
+		for f in filenames:
+			src = os.path.join(dirpath, f)
+			if args.v:
+				print("\t", src)
+
+			rel_path = dirpath.replace(args.i, "").replace("objdir/ipc/ipdl/_ipdlheaders/", "").lstrip("/")
+			if rel_path:
+				makedirs(os.path.join(args.o, rel_path))
+			dst = os.path.join(args.o, rel_path, f)
+			os.symlink(src, dst)
+
 	# Now do the special icky NSPR stuff
 	if args.v:
 		print("NSPR Headers")
