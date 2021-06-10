@@ -292,12 +292,14 @@ file { '/mozilla-central/.mozconfig':
 
 exec { 'build-export-2':
   command => '/mozilla-central/mach create-mach-environment',
-  cwd => '/mozilla-central'
+  cwd => '/mozilla-central',
+  environment => [ 'HOME=/root' ]
 } ->
 
 exec { 'build-export-3':
   command => '/mozilla-central/mach build export',
-  cwd => '/mozilla-central'
+  cwd => '/mozilla-central',
+  environment => [ 'HOME=/root' ]
 } ->
 
 # We do it with a -tmp directory we replace in case the headers
