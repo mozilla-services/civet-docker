@@ -201,7 +201,7 @@ if __name__ == "__main__":
 		if len(dirnames) != 0 or len(filenames) != 0:
 			print("Output directory is not empty.")
 			sys.exit(1)
-	os.makedirs(args.o)
+	makedirs(args.o)
 
 	if args.i[0] != "/" or args.o[0] != "/":
 		print("Only fully-qualified paths are allowed.")
