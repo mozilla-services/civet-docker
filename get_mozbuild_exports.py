@@ -78,11 +78,14 @@ def get_exports(source, root):
 				conditional = ast.get_source_segment(source, node.parent.test)
 			
 				if ("OS_ARCH" in conditional or "OS_TARGET" in conditional) and "Linux" not in conditional:
-					should_include = False
+					if e not in node.parent.orelse:
+						should_include = False
 				if "MOZ_WIDGET_TOOLKIT" in conditional and "gtk" not in conditional:
-					should_include = False
+					if e not in node.parent.orelse:
+						should_include = False
 				if "MOZ_BUILD_APP" in conditional and '== "memory"' in conditional:
-					should_include = False
+					if e not in node.parent.orelse:
+						should_include = False
 				
 			node = node.parent
 				
