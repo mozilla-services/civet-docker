@@ -262,6 +262,21 @@ if __name__ == "__main__":
 			dst = os.path.join(args.o, rel_path, f)
 			os.symlink(src, dst)
 
+	for (dirpath, dirnames, filenames) in os.walk(os.path.join(args.i, "ipc/chromium/src/")):
+		for f in filenames:
+			if not f.endswith(".h"):
+				continue
+
+			src = os.path.join(dirpath, f)
+			if args.v:
+				print("\t", src)
+
+			rel_path = dirpath.replace(args.i, "").replace("ipc/chromium/src/", "").lstrip("/")
+			if rel_path:
+				makedirs(os.path.join(args.o, rel_path))
+			dst = os.path.join(args.o, rel_path, f)
+			os.symlink(src, dst)
+
 	# Now do the special icky NSPR stuff
 	if args.v:
 		print("NSPR Headers")
