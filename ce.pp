@@ -299,7 +299,8 @@ exec { 'build-export-2':
 exec { 'build-export-3':
   command => '/mozilla-central/mach build export',
   cwd => '/mozilla-central',
-  environment => [ 'HOME=/root' ]
+  environment => [ 'HOME=/root' ],
+  returns => 1
 } ->
 
 # We do it with a -tmp directory we replace in case the headers
