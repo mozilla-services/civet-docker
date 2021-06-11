@@ -244,8 +244,8 @@ file { '/opt/':
 vcsrepo { '/opt/compiler-explorer':
   ensure => present,
   provider => git,
-  source => 'https://github.com/compiler-explorer/compiler-explorer.git',
-  revision => 'a519919a340e77041b1064d8e7952f047f68db37',
+  source => 'https://github.com/tomrittervg/compiler-explorer.git',
+  revision => '747ccfd847ca227f221f85df37bce373fd412abd',
 } ->
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
