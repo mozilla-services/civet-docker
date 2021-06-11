@@ -63,6 +63,9 @@ def get_exports(source, root):
 	# whose conditional includes OS_ARCH or OS_TARGET and if so, only include it if it's Linux
 	for e in all_exports:
 		e_source = ast.get_source_segment(source, e)
+
+		#if "XXXXXXX" in e_source:
+		#	pdb.set_trace()
 	
 		if e.parent == root:
 			linux_exports.append((e, e_source))
@@ -77,14 +80,16 @@ def get_exports(source, root):
 			if isinstance(node.parent, ast.If):
 				conditional = ast.get_source_segment(source, node.parent.test)
 			
+				# We want to ensure that the node is excluded if it is directly underneath a conditional
+				# that looks like it is for another platform
 				if ("OS_ARCH" in conditional or "OS_TARGET" in conditional) and "Linux" not in conditional:
-					if e not in node.parent.orelse:
+					if e in node.parent.body:
 						should_include = False
 				if "MOZ_WIDGET_TOOLKIT" in conditional and "gtk" not in conditional:
-					if e not in node.parent.orelse:
+					if e in node.parent.body:
 						should_include = False
 				if "MOZ_BUILD_APP" in conditional and '== "memory"' in conditional:
-					if e not in node.parent.orelse:
+					if e in node.parent.body:
 						should_include = False
 				
 			node = node.parent
