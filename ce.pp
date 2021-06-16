@@ -90,7 +90,8 @@ package { 'openresty-opm':
 
 exec { "setup-openresty-4":
   command => '/usr/bin/opm install zmartzone/lua-resty-openidc=1.6.1',
-  environment => [ 'HOME=/root' ]
+  environment => [ 'HOME=/root' ],
+  unless => '/usr/bin/opm list | /usr/bin/grep lua-resty-openidc'
 } ->
 
 package { "lua5.1":
@@ -103,7 +104,7 @@ file { '/etc/systemd/system/openresty.service.d/':
 
 file { '/etc/systemd/system/openresty.service.d/override.conf':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/override.conf'
+  source => '/civet-docker/override.conf'
 } ->
 
 exec { 'setup-env-secret-1':
@@ -124,7 +125,7 @@ exec { 'setup-env-secret-2':
     --header "x-goog-user-project: moz-dev-fx-tritter-compilerexp" \
     | /usr/bin/jq -r ".payload.data" | /usr/bin/base64 --decode)\'"\' >> /etc/systemd/system/openresty.service.d/override.conf',
   unless => '/usr/bin/grep client_secret=K /etc/systemd/system/openresty.service.d/override.conf',
-} ->
+} ~>
 
 exec { 'setup-env-secret-3':
   command => '/usr/bin/systemctl daemon-reload',
@@ -136,13 +137,15 @@ file { '/etc/openresty/conf.d/':
 
 file { '/etc/openresty/nginx.conf':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/nginx.conf',
+  source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/nginx.conf',
+  replace => false,
   notify  => Service['openresty']
 } ->
 
 file { '/etc/openresty/conf.d/nginx_lua.conf':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/nginx_lua.conf',
+  source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/conf.d/nginx_lua.conf',
+  replace => false,
   notify  => Service['openresty']
 } ->
 
@@ -162,25 +165,28 @@ file_line { 'ca-replace':
 
 file { '/etc/openresty/conf.d/openidc_layer.lua':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/openidc_layer.lua',
+  source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/conf.d/openidc_layer.lua',
+  replace => false,
   notify  => Service['openresty']
 } ->
 
 file { '/etc/openresty/conf.d/proxy_auth_bypass.conf':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/proxy_auth_bypass.conf',
+  source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/conf.d/proxy_auth_bypass.conf',
+  replace => false,
   notify  => Service['openresty']
 } ->
 
 file { '/etc/openresty/conf.d/server.conf':
   ensure => file,
-  source => 'https://raw.githubusercontent.com/mozilla-services/civet-docker/main/server.conf',
+  source => '/civet-docker/server.conf',
   notify  => Service['openresty']
 } ->
 
 file { '/etc/openresty/conf.d/server.lua':
   ensure => file,
-  source => 'https://github.com/mozilla-iam/mozilla.oidc.accessproxy/raw/master/etc/conf.d/server.lua',
+  source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/conf.d/server.lua',
+  replace => false,
   notify  => Service['openresty']
 } ->
 
@@ -328,7 +334,7 @@ vcsrepo { '/civet-docker':
   ensure => latest,
   provider => git,
   source => 'https://github.com/mozilla-services/civet-docker.git',
-  revision => 'compile-flags'
+  revision => 'tweaks'
 } ->
 
 cron { 'puppet-apply':
