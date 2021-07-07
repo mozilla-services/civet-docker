@@ -57,6 +57,15 @@ def get_exports(source, root):
 			(isinstance(node.targets[0], ast.Attribute) and "EXPORTS" in ast.get_source_segment(source, node))
 			)
 		])
+	all_exports.extend([node
+		for node in ast.walk(root)
+		if isinstance(node, ast.Assign)
+		and (
+			(isinstance(node.targets[0], ast.Subscript) and isinstance(node.targets[0].value, ast.Name) and node.targets[0].value.id == "EXPORTS")
+			and
+			(node.targets[0].slice.value.value == "double-conversion") # Limit it to just this one case to be safe
+			)
+		])
 	linux_exports = []
 
 	# For each export, see if it is contained within an if statement
@@ -161,6 +170,9 @@ def get_symlink_mapping(mozilla_root, all_exports):
 					subtarget = subtarget.value
 				assert isinstance(subtarget, ast.Name)
 				assert subtarget.id == "EXPORTS"
+			elif isinstance(target, ast.Subscript):
+				assert target.value.id == "EXPORTS"
+				rel_path = target.slice.value.value
 			else:
 				assert False
 				pdb.set_trace()
