@@ -251,7 +251,7 @@ vcsrepo { '/opt/compiler-explorer':
   ensure => present,
   provider => git,
   source => 'https://github.com/tomrittervg/compiler-explorer.git',
-  revision => '520ce93e7e8dfd743de1cc7d9a5d708cb826dec0',
+  revision => '8eb5bd640fde7690c2da7348e4603fd255719292',
 } ->
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
@@ -334,7 +334,7 @@ vcsrepo { '/civet-docker':
   ensure => latest,
   provider => git,
   source => 'https://github.com/mozilla-services/civet-docker.git',
-  revision => 'tweaks'
+  revision => 'main'
 } ->
 
 cron { 'puppet-apply':
