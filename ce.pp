@@ -252,31 +252,37 @@ vcsrepo { '/opt/compiler-explorer':
   provider => git,
   source => 'https://github.com/tomrittervg/compiler-explorer.git',
   revision => 'mozilla-main',
+  notify  => Service['ce']
 } ->
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
   ensure => file,
-  source => '/civet-docker/execution.mozilla.properties'
+  source => '/civet-docker/execution.mozilla.properties',
+  notify  => Service['ce']
 } ->
 
 file { '/opt/compiler-explorer/etc/config/c++.local.properties':
   ensure => file,
-  source => '/civet-docker/c++.mozilla.properties'
+  source => '/civet-docker/c++.mozilla.properties',
+  notify  => Service['ce']
 } ->
 
 file { '/opt/compiler-explorer/etc/nsjail/execute.cfg':
   ensure => file,
-  source => '/civet-docker/execute.cfg'
+  source => '/civet-docker/execute.cfg',
+  notify  => Service['ce']
 }
 
 file { '/opt/compiler-explorer/views/resources/site-logo.svg':
   ensure => file,
-  source => '/civet-docker/ce-mozilla.svg'
+  source => '/civet-docker/ce-mozilla.svg',
+  notify  => Service['ce']
 } ->
 
 file { '/etc/systemd/system/ce.service':
   ensure => file,
-  source => '/civet-docker/ce.service'
+  source => '/civet-docker/ce.service',
+  notify  => Service['ce']
 } ->
 
 service { 'ce':
