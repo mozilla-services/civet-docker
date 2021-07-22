@@ -251,7 +251,7 @@ vcsrepo { '/opt/compiler-explorer':
   ensure => present,
   provider => git,
   source => 'https://github.com/tomrittervg/compiler-explorer.git',
-  revision => '8eb5bd640fde7690c2da7348e4603fd255719292',
+  revision => 'mozilla-main',
 } ->
 
 file { '/opt/compiler-explorer/etc/config/execution.local.properties':
