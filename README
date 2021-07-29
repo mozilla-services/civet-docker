@@ -24,7 +24,7 @@ Compiler Explorer runs on the machine on port 10240 and openresty proxies to it.
 
 #### Set up a machine image:
 
-Create a VM instance using Ubuntu 20.04, at least 4 GB of RAM, 24 GB of disk, an SSH key to get in, give it the username 'ubuntu', and the correct service account and then do the following:
+Create a VM instance using Ubuntu 20.04, at least 4 GB of RAM, 24 GB of disk, an SSH key to get in, give it the username 'ubuntu', allow HTTP/HTTPS traffic, and the correct service account and then do the following:
 
 (The specific username is important.)
 
@@ -43,6 +43,4 @@ sudo chmod +x /etc/rc.local
 ```
 
 Ensure that the machine has done all the puppet stuff. You can make sure compiler-explorer is running locally by doing `curl http://localhost:10240`.  It does take a few minutes for puppet to finish everything as compiling CE takes a few minutes at least.
-
-### CE Mozilla Library Setup
 

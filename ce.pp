@@ -138,7 +138,7 @@ file { '/etc/openresty/conf.d/':
 file { '/etc/openresty/nginx.conf':
   ensure => file,
   source => 'https://raw.githubusercontent.com/mozilla-iam/mozilla.oidc.accessproxy/76c7ef9b40a2f983b902977bafebc9e688e1ab61/etc/nginx.conf',
-  replace => false,
+  replace => true,
   notify  => Service['openresty']
 } ->
 
